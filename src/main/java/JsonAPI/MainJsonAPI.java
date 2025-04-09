@@ -180,7 +180,7 @@ public class MainJsonAPI {
                 List<Map<String, Object>> comments = getPostComments(postId);
 
                 // Записуємо коментарі у файл
-                try (FileWriter fileWriter = new FileWriter("src/main/resources/commentsUsers.json")) {
+                try (FileWriter fileWriter = new FileWriter("src/main/resources/user-X-post-Y-comments.json")) {
                     gson.toJson(comments, fileWriter);
                 } catch (IOException e) {
                     e.printStackTrace();
