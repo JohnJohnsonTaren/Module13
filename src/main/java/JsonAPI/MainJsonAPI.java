@@ -6,6 +6,7 @@ import com.google.gson.reflect.TypeToken;
 
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
+import org.jsoup.Connection.Response;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -16,17 +17,17 @@ import java.util.Map;
 
 public class MainJsonAPI {
     private static final String USER_API = "https://jsonplaceholder.typicode.com/users";
-    private static final String POSTS_API = "https://jsonplaceholder.typicode.com/users/1/posts";
-    private static final String COMMENTS_API = "https://jsonplaceholder.typicode.com/comments";
-    private static final String TODOS_API = "https://jsonplaceholder.typicode.com/users/1/todos";
+    private static final String POSTS_API = "https://jsonplaceholder.typicode.com/users/%d/posts";
+    private static final String COMMENTS_API = "https://jsonplaceholder.typicode.com/users/%d/comments";
+    private static final String TODOS_API = "https://jsonplaceholder.typicode.com/users/%d/todos";
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     public static void main(String[] args) throws IOException {
         // Створення нового користувача
         Map<String, Object> newUser = Map.of(
-                "name ", " New User",
-                "username ", " newuser",
-                "email ", " newuser@example.com"
+                "name", "NewUser",
+                "username", "newuser",
+                "email", "newuser@example.com"
         );
         String createdUserResponse = createUser(newUser);
         System.out.println("Created User:\n" + createdUserResponse);
@@ -65,103 +66,107 @@ public class MainJsonAPI {
         printOpenTodos(1);
     }
 
+    private static void validResp(Response response, int expectedStatusCode) {
+        System.err.println("Expected status code " + expectedStatusCode);
+        System.err.println(response.body());
+    }
+
     // Створення нового користувача
     public static String createUser(Map<String, Object> userData) throws IOException {
-        return Jsoup.connect(USER_API)
+        Response response = Jsoup.connect(USER_API)
                 .requestBody(gson.toJson(userData))
                 .method(Connection.Method.POST)
                 .ignoreContentType(true)
                 .ignoreHttpErrors(true)
                 .header("Content-Type", "application/json; charset=UTF-8")
-                .execute()
-                .body();
+                .execute();
+        validResp(response, 201);
+        return response.body();
     }
 
     // Оновлення існуючого користувача за ID
     public static String updateUser(int id, Map<String, Object> userData) throws IOException {
-        return Jsoup.connect(USER_API + "/" + id)
+        Response response = Jsoup.connect(USER_API + "/" + id)
                 .requestBody(gson.toJson(userData))
                 .method(Connection.Method.PUT)
                 .ignoreContentType(true)
                 .ignoreHttpErrors(true)
                 .header("Content-Type", "application/json; charset=UTF-8")
-                .execute()
-                .body();
+                .execute();
+        validResp(response, 200);
+        return response.body();
     }
 
     // Видалення користувача за ID
     public static String deleteUser(int id) throws IOException {
-        return Jsoup.connect(USER_API + "/" + id)
+        Response response = Jsoup.connect(USER_API + "/" + id)
                 .method(Connection.Method.DELETE)
                 .ignoreContentType(true)
                 .ignoreHttpErrors(true)
-                .execute()
-                .body();
+                .execute();
+        validResp(response, 200);
+        return response.body();
     }
 
     // Отримання інформації про всіх користувачів
     public static List<Map<String, Object>> getAllUsers() throws IOException {
-        String response = Jsoup.connect(USER_API)
+        Response response = Jsoup.connect(USER_API)
                 .method(Connection.Method.GET)
                 .ignoreContentType(true)
                 .ignoreHttpErrors(true)
-                .execute()
-                .body();
+                .execute();
+        validResp(response, 200);
         Type listType = new TypeToken<List<Map<String, Object>>>() {
         }.getType();
-        return gson.fromJson(response, listType);
+        return gson.fromJson(response.body(), listType);
     }
 
     // Отримання інформації про користувача за ID
     public static Map<String, Object> getUserInfoId(int id) throws IOException {
-        String response = Jsoup.connect(USER_API + "/" + id)
+        Response response = Jsoup.connect(USER_API + "/" + id)
                 .method(Connection.Method.GET)
                 .ignoreContentType(true)
                 .ignoreHttpErrors(true)
-                .execute()
-                .body();
+                .execute();
         Type mapType = new TypeToken<Map<String, Object>>() {
         }.getType();
-        return gson.fromJson(response, mapType);
+        return gson.fromJson(response.body(), mapType);
     }
 
     // Отримання інформації про користувача за username
     public static List<Map<String, Object>> getUsername(String username) throws IOException {
-        String response = Jsoup.connect(USER_API + "?username=" + username)
+        Response response = Jsoup.connect(USER_API + "?username=" + username)
                 .method(Connection.Method.GET)
                 .ignoreContentType(true)
                 .ignoreHttpErrors(true)
-                .execute()
-                .body();
+                .execute();
         Type listType = new TypeToken<List<Map<String, Object>>>() {
         }.getType();
-        return gson.fromJson(response, listType);
+        return gson.fromJson(response.body(), listType);
     }
 
     // Отримання всіх постів користувача за ID
     public static List<Map<String, Object>> getUserPosts(int userId) throws IOException {
-        String response = Jsoup.connect(String.format(POSTS_API, userId))
+        Response response = Jsoup.connect(String.format(POSTS_API, userId))
                 .method(Connection.Method.GET)
                 .ignoreContentType(true)
                 .ignoreHttpErrors(true)
-                .execute()
-                .body();
+                .execute();
         Type listType = new TypeToken<List<Map<String, Object>>>() {
         }.getType();
-        return gson.fromJson(response, listType);
+        return gson.fromJson(response.body(), listType);
     }
 
     // Получение комментариев по ID
     public static List<Map<String, Object>> getPostComments(int postId) throws IOException {
-        String response = Jsoup.connect(String.format(COMMENTS_API, postId))
+        Response response = Jsoup.connect(String.format(COMMENTS_API, postId))
                 .method(Connection.Method.GET)
                 .ignoreContentType(true)
                 .ignoreHttpErrors(true)
-                .execute()
-                .body();
+                .execute();
         Type listType = new TypeToken<List<Map<String, Object>>>() {
         }.getType();
-        return gson.fromJson(response, listType);
+        return gson.fromJson(response.body(), listType);
     }
 
     // Метод для получения и записи комментариев в последний пост пользователя
