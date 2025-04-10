@@ -18,7 +18,8 @@ import java.util.Map;
 public class MainJsonAPI {
     private static final String USER_API = "https://jsonplaceholder.typicode.com/users";
     private static final String POSTS_API = "https://jsonplaceholder.typicode.com/users/%d/posts";
-    private static final String COMMENTS_API = "https://jsonplaceholder.typicode.com/users/%d/comments";
+    private static final String COMMENTS_API =
+            "https://jsonplaceholder.typicode.com/users/%d/comments";
     private static final String TODOS_API = "https://jsonplaceholder.typicode.com/users/%d/todos";
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
@@ -67,8 +68,11 @@ public class MainJsonAPI {
     }
 
     private static void validResp(Response response, int expectedStatusCode) {
-        System.err.println("Expected status code " + expectedStatusCode);
-        System.err.println(response.body());
+        if (expectedStatusCode != response.statusCode()) {
+            System.err.println("\nExpected status code " + expectedStatusCode +
+                    ", but got " + response.statusCode());
+            System.err.println(response.body());
+        }
     }
 
     // Створення нового користувача
@@ -176,7 +180,8 @@ public class MainJsonAPI {
         if (userPosts != null && !userPosts.isEmpty()) {
             // Знаходимо пост з найбільшим id (останній пост)
             Map<String, Object> lastPost = userPosts.stream()
-                    .max(Comparator.comparingInt(post -> ((Number) post.get("id")).intValue()))
+                    .max(Comparator.comparingInt(
+                            post -> ((Number) post.get("id")).intValue()))
                     .orElse(null);
 
 
@@ -185,7 +190,8 @@ public class MainJsonAPI {
                 List<Map<String, Object>> comments = getPostComments(postId);
 
                 // Записуємо коментарі у файл
-                try (FileWriter fileWriter = new FileWriter("src/main/resources/user-X-post-Y-comments.json")) {
+                try (FileWriter fileWriter = new FileWriter(
+                        "src/main/resources/user-X-post-Y-comments.json")) {
                     gson.toJson(comments, fileWriter);
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -213,10 +219,11 @@ public class MainJsonAPI {
 
         if (todos != null && !todos.isEmpty()) {
             todos.stream()
-                    .filter(todo -> !((Boolean) todo.get("completed")))
-                    .forEach(todo -> System.out.println("- " + todo.get("title")));
+                    .filter(
+                            todo -> !((Boolean) todo.get("completed")))
+                    .forEach(
+                            todo -> System.out.println("- " + todo.get("title")));
         }
     }
-
 }
 
